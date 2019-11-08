@@ -1,19 +1,27 @@
+package SVG_TO_FXML;
+
+
+import java.io.File;
+import java.nio.file.*;; 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.util.regex.Pattern;
+import javafx.scene.control.Label;
 
-public class App extends Application
+public class SVG_TO_FXML extends Application
 {
     private FileChooser svgFCH, fxmlFCH, toolFCH;
     private TextField svgTF, fxmlTF;
-    private Button btn1,btn2,btn3;
+    private Button btn1,btn2,btn3,btn4;
     private String nazov_pre_save, cesta_tool;
 
     @Override
@@ -32,11 +40,12 @@ public class App extends Application
         GL.add(btn1, 1,0);
         GL.add(fxmlTF, 0, 1);
         GL.add(btn2, 1,1);
+         
 
         GL.add(btn3, 0, 2);
-
-        GL.add(new Label("By: D.Kolibár"), 1,2);
-
+        GL.add(btn4, 1,2);
+        GL.add(new Label("Origin made by: D.Kolibár"), 0,3);
+        GL.add(new Label("Modified by: hduelme (2019)"), 0,4);
         primaryStage.setScene(new Scene(GL));
 
         primaryStage.setResizable(false);
@@ -101,11 +110,31 @@ public class App extends Application
         {
             if(cesta_tool == null)
             {
-                cesta_tool = toolFCH.showOpenDialog(primaryStage).getAbsolutePath();
-                doMagic();
+                File f = new File("svg2fxml-0.8.1-SNAPSHOT.jar");
+                if(f.exists())
+                {
+                    cesta_tool = f.getAbsolutePath();
+                }
+                else
+                {
+                    cesta_tool = toolFCH.showOpenDialog(primaryStage).getAbsolutePath();
+                    doMagic();
+                }
+                
             }
             else
                 doMagic();
+        });
+        
+        btn4.setOnAction(event ->
+        {
+            if(!fxmlTF.getText().equals("") || !fxmlTF.getText().equals("Please select")){
+                fixFile();
+            }
+            else{
+                btn2.setDisable(false);
+                fxmlTF.setText("Please select");
+            }
         });
     }
 
@@ -117,10 +146,14 @@ public class App extends Application
             System.out.println(command);
             Process proc = Runtime.getRuntime().exec(command);
         }
-        catch (Exception e)
+        catch (IOException e)
         {
             System.out.println(e);
         }
+
+        
+            
+
     }
 
     private void initKomponenty()
@@ -161,8 +194,36 @@ public class App extends Application
         btn3 = new Button("SVG2FXML!");
         btn3.setDisable(true);
         btn3.setFont(font);
+        
+        btn4 = new Button("Repair");
+        btn4.setFont(font);
+    }
+    
+    private void fixFile()
+    {
+       List<String> lines = null;
+        System.out.println("Read:" +fxmlTF.getText());
+        try
+        { 
+            lines = 
+            Files.readAllLines(Paths.get(fxmlTF.getText()), StandardCharsets.UTF_8); 
+            for(int x = 0; x < lines.size();x++)
+            {
+                if(lines.get(x).contains("linearGradient") || lines.get(x).contains("radialGradient"))
+                {
+                    System.out.println("delte"+x);
+                    lines.remove(x);
+                }
+                //System.out.println(x);
+            }
+            Files.write(Paths.get(fxmlTF.getText()),lines, StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+            System.out.println(ex);
+        } 
     }
 
+
+    
 
     public static void main(String[] args) {
         launch(args);
