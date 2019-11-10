@@ -1,4 +1,4 @@
-# GUI_svf2fxml
+# GUI_svg2fxml
 
 ![badge](https://img.shields.io/badge/tested%20on%3A-Windows%2010-blue.svg)
 
